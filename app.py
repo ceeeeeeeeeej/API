@@ -6,12 +6,18 @@ import os
 
 app = Flask(__name__)
 
-# Load TFLite model for low-memory production hosting
-interpreter = tflite.Interpreter(model_path="garbage_classifier.tflite")
-interpreter.allocate_tensors()
-
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
+# Load TFLite model with diagnostic logging
+try:
+    print("⏳ Loading TFLite model...")
+    interpreter = tflite.Interpreter(model_path="garbage_classifier.tflite")
+    interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    print("✅ Model loaded successfully!")
+except Exception as e:
+    print(f"❌ CRITICAL ERROR LOADING MODEL: {str(e)}")
+    # We allow the error to bubble up so Gunicorn logs it clearly
+    raise e
 
 # Match your training labels
 classes = ["Biodegradable", "Non-biodegradable", "Recyclable"]
